@@ -10,24 +10,33 @@ import threading
 import time
 import serial
 
+
 # Définir le port série et le débit en bauds
-SERIAL_PORT = 'COM5'  # Assurez-vous que le port est correct
-BAUD_RATE = 9600
+SERIAL_PORT = 'COM3'  # Assurez-vous que le port est correct
+BAUD_RATE = 115200
 
 # Initialiser la connexion série
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
+number = 0	
+number_left = 0		
+number_right = 0		
+number_center = 0
+CRITICAL_DISTANCE = float(ser.readline().decode('utf-8').strip()) * 2
 
-# User-defined constant
-CRITICAL_DISTANCE = 1000  # 1000cm
+
+# # User-defined constant
+# CRITICAL_DISTANCE = 1000  # 1000cm
 
 slc_data = []
-
 def send_serial_command(vibrator):
-    ser.write(f"{vibrator}\n".encode('utf-8'))
+   ser.write(f"{vibrator}\n".encode('utf-8'))
 
 def adjust_brightness(image, factor=1.5):
     # Assurez-vous que les valeurs ne dépassent pas 255 après l'ajustement
     return np.clip(image * factor, 0, 255).astype(np.uint8)
+
+# Initialize a counter variable
+alert_counter = 0
 
 def circular_mask(height, width, center, radius):
     y, x = np.ogrid[:height, :width]
@@ -35,7 +44,7 @@ def circular_mask(height, width, center, radius):
     return mask
 
 def main():
-    global slc_data
+    global slc_data, alert_counter, number, number_left, number_right, number_center, CRITICAL_DISTANCE
 
     try:
         with OakCamera() as oak:
@@ -81,13 +90,17 @@ def main():
 
     except Exception as e:
         print(f"An error occurred: {e}")
-
     finally:
         ser.close()
 
 def cb(packet: DisparityDepthPacket):
-    global slc_data
-
+    global slc_data, alert_counter, number, number_left, number_right, number_center, CRITICAL_DISTANCE
+    CRITICAL_DISTANCE = float(ser.readline().decode('utf-8').strip()) * 2
+    # print(CRITICAL_DISTANCE,"cm")
+    # Initialize the message variable
+    message = ""
+    var = 0
+    var2 = 0
     depth_frame_color = packet.visualizer.draw(packet.frame)
 
     h, w = depth_frame_color.shape[:2]
@@ -138,23 +151,55 @@ def cb(packet: DisparityDepthPacket):
             distances_in_mask_left.append(distance)
         else:
             distances_in_mask_right.append(distance)
+    if (len(distances_in_mask_right) > 0 and len([d for d in distances_in_mask_right if d < CRITICAL_DISTANCE]) >= 5) and \
+       (len(distances_in_mask_left) > 0 and len([d for d in distances_in_mask_left if d < CRITICAL_DISTANCE]) >= 5):
+        message = "ALERTEEE au centre"
+        var = 1
+        var2 = 7
+        # send_serial_command(9)
+    elif len(distances_in_mask_right) > 0 and len([d for d in distances_in_mask_right if d < CRITICAL_DISTANCE]) >= 5:
+        message = "ALERTEEE a droite"
+        # send_serial_command(7)
+        var = 7
+    elif len(distances_in_mask_left) > 0 and len([d for d in distances_in_mask_left if d < CRITICAL_DISTANCE]) >= 5:
+        message = "ALERTEEE a gauche"
+        # send_serial_command(9)
+        var = 1
 
-    if (len(distances_in_mask_right) > 0 and len([d for d in distances_in_mask_right if d < CRITICAL_DISTANCE]) >= 10) and \
-       (len(distances_in_mask_left) > 0 and len([d for d in distances_in_mask_left if d < CRITICAL_DISTANCE]) >= 10):
-        print("ALERTEEE à droite et a gauche")
-        send_serial_command(9)
+    # Process alerts only when the counter reaches 5
+    alert_counter += 1
+    if alert_counter >= 6:
+        print(CRITICAL_DISTANCE,"cm")
+        print(message)
+        number += 1
+        if message == "ALERTEEE au centre":
+            number_center += 1
+        elif message == "ALERTEEE a droite":
+            number_right += 1
+        elif message == "ALERTEEE a gauche":
+            number_left +=                send_serial_command(var)
+        send_serial_command(var2)
+        print(var,var2)
+        print('number:',number, 'nombre_left:',number_left, 'nombre_right:',number_right, 'nombre_center:',number_center)
 
-    elif len(distances_in_mask_left) > 0 and len([d for d in distances_in_mask_left if d < CRITICAL_DISTANCE]) >= 10:
-        print("ALERTEEE à gauche")
-        send_serial_command(9)
+        var = 0
+        var2 = 0
+        # Reset the counter
+        alert_counter = 0
+    # print(message)
+    # send_serial_command(var)
+    # send_serial_command(var2)
+    # var = 0
+    # var2 = 0
+    #  # Reset the counter
+    # alert_counter = 0
+    # print("VIBRATION")
 
-    elif len(distances_in_mask_right) > 0 and len([d for d in distances_in_mask_right if d < CRITICAL_DISTANCE]) >= 10:
-        print("ALERTEEE à droite")
-        send_serial_command(7)
 
-    send_serial_command(0)  # Désactiver tous les vibreurs
+    # Increment the counter on each callback
+   # send_serial_command(0)  # Désactiver tous les vibreurs
 
-    #cv2.imshow('0_depth', depth_frame_copy)
-
+    resized_frame = cv2.resize(depth_frame_copy, (0, 0), fx=0.5, fy=0.5)
+    cv2.imshow('0_depth', resized_frame)
 if __name__ == "__main__":
     main()
