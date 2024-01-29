@@ -25,11 +25,11 @@ void loop() {
   if (Serial.available() > 0){
     int command = Serial.parseInt();
     if (command == 7){
-      analogWrite(VIBRATOR_1, 120);  // Assuming you want to set it to maximum intensity
+      analogWrite(VIBRATOR_1, 130);  // Assuming you want to set it to maximum intensity
       analogWrite(VIBRATOR_2, 0);    // Turn off the other vibrator
     } 
     else if (command == 1){
-      analogWrite(VIBRATOR_2, 50);  // Assuming you want to set it to maximum intensity
+      analogWrite(VIBRATOR_2, 100);  // Assuming you want to set it to maximum intensity
       analogWrite(VIBRATOR_1, 0);    // Turn off the other vibrator
     }
     else {
@@ -38,5 +38,5 @@ void loop() {
     }
   }
   // Wait for a short moment
-  delay(200);
+  delay(100);
 }
