@@ -1,6 +1,9 @@
 # virtual-cane
 #### University project on a virtual white can for visually impaired people
 
+![White virtual cane](https://github.com/Miightx/virtual-cane-M2-SMR/assets/117952621/dc573cca-adc7-40e5-8ea3-6a645c4ff00a)
+
+
 The project is realised by Evan BOKOBZA, Thibault JEANNOT and Laurent LIN for a master degree project. The aim of the project is to develop a tool to help navigate with obstacles. To do so, a significant isolated part is distributed, in order that everyone can progress smoothly and give regards to the other parts. The creation of the device is divided in three parts: 
  - Electronic (arduino and electronic circuit)
  - Conception (design and 3d printer)
