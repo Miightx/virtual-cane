@@ -35,7 +35,8 @@ After taking the measurements, we created a casing to hold the device and to sta
 ![Couvercle 3D](https://github.com/Miightx/virtual-cane-M2-SMR/assets/117952621/330c678b-454c-401f-ac92-efc6735935dd)
 
 Obstacle detection code:
-Based on the documentation (https://github.com/luxonis/depthai/blob/main/depthai_sdk/docs/source/samples/mixed/sdk_collision_avoidance.rst), it provide a guidance to implement the navigation system using the OAK-D camera. Morevoer, in the center of the image, a circle segmentation may reduce the noise. An identification of objects by the disparity of neighbor colors allow to detect objects. From the object detected, some information is sent to the arduino system in order to give the command to vibrate on a side.
+
+Based on the  [Github documentation](https://github.com/luxonis/depthai/blob/main/depthai_sdk/docs/source/samples/mixed/sdk_collision_avoidance.rst), it provide a guidance to implement the navigation system using the OAK-D camera. Morevoer, in the center of the image, a circle segmentation may reduce the noise. An identification of objects by the disparity of neighbor colors allow to detect objects. From the object detected, some information is sent to the arduino system in order to give the command to vibrate on a side.
 
 ![Detection](https://github.com/Miightx/virtual-cane-M2-SMR/assets/117952621/1efaa287-512c-4a54-8718-a77de1aec3b6)
 
